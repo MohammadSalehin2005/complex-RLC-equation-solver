@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Complex Circuit Equation Solver</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+        h1 { color: #333; }
+        input, button { padding: 5px; margin: 5px; }
+        table { border-collapse: collapse; margin-top: 10px; }
+        td { padding: 5px; }
+        .matrix-input { width: 80px; }
+        .output { background: white; padding: 10px; border-radius: 5px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Complex Circuit Equation Solver</h1>
+    <label>Number of variables: <input type="number" id="numVars" min="1" value="2"></label>
+    <button onclick="generateForm()">Generate Form</button>
+
+    <div id="matrixForm"></div>
+    <button id="solveBtn" style="display:none;" onclick="solveEquations()">Solve</button>
+
+    <div class="output" id="output"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    <script>
+        function generateForm() {
+            const n = parseInt(document.getElementById('numVars').value);
+            let html = '<table>';
+            for (let i = 0; i < n; i++) {
+                html += '<tr>';
+                for (let j = 0; j < n; j++) {
+                    html += `<td><input class="matrix-input" id="a_${i}_${j}" placeholder="a${i+1}${j+1}"></td>`;
+                }
+                html += `<td><input class="matrix-input" id="b_${i}" placeholder="b${i+1}"></td>`;
+                html += '</tr>';
+            }
+            html += '</table>';
+            html += '<p>Tip: You can use fractions like 3/4, expressions with ω, j, and L or C (e.g. j*4*L, 1/(j*ω*C))</p>';
+            document.getElementById('matrixForm').innerHTML = html;
+            document.getElementById('solveBtn').style.display = 'inline-block';
+        }
+
+        function parseComplex(expr) {
+            expr = expr.replace(/j/g, 'i'); 
+            return math.complex(math.evaluate(expr));
+        }
+
+        function solveEquations() {
+            const n = parseInt(document.getElementById('numVars').value);
+            let A = [];
+            let B = [];
+            for (let i = 0; i < n; i++) {
+                let row = [];
+                for (let j = 0; j < n; j++) {
+                    let val = document.getElementById(`a_${i}_${j}`).value || "0";
+                    row.push(parseComplex(val));
+                }
+                A.push(row);
+                let bval = document.getElementById(`b_${i}`).value || "0";
+                B.push(parseComplex(bval));
+            }
+
+            let solution = math.lusolve(A, B).flat();
+            let output = "<h3>Solution:</h3>";
+            solution.forEach((sol, idx) => {
+                let r = math.abs(sol);
+                let theta = math.unit(math.arg(sol), "rad").toNumber("deg");
+                output += `<p>X${idx+1} = ${math.format(sol, {notation: 'fixed', precision: 4})} ` +
+                          `(polar: ${r.toFixed(4)} ∠ ${theta.toFixed(2)}°)</p>`;
+            });
+            document.getElementById('output').innerHTML = output;
+        }
+    </script>
+</body>
+</html>
