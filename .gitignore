@@ -1,5 +1,12 @@
-*.log
-*.tmp
-*.bak
+# Ignore system files
 .DS_Store
+Thumbs.db
+
+# Ignore IDE/project files
+.vscode/
+.idea/
+*.log
+
+# Node modules (not used now, but safe to ignore)
 node_modules/
+
